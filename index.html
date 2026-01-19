@@ -4,16 +4,46 @@
   <meta charset="UTF-8">
   <title>AI STORE</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; background: #f5f5f5; margin: 0; padding: 0; }
+    header { background: #0088cc; color: #fff; padding: 15px 0; }
+    h1 { margin: 0; font-size: 24px; }
+    .product { background: #fff; margin: 15px; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    img { max-width: 150px; }
+    button { background: #0088cc; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+  </style>
 </head>
+<body>
 
-<body style="font-family:Arial;text-align:center">
+<header>
+  <h1>👋 Добро пожаловать в AI STORE</h1>
+</header>
 
-<h2>👋 Добро пожаловать в AI STORE</h2>
+<div class="product">
+  <img src="https://via.placeholder.com/150" alt="MCHOES V9 PRO">
+  <h2>MCHOES V9 PRO</h2>
+  <p>Беспроводные наушники Bluetooth</p>
+  <button onclick="order('MCHOES V9 PRO')">Заказать</button>
+</div>
 
-<button onclick="Telegram.WebApp.close()"
-style="padding:15px;background:#0088cc;color:#fff;border:none;border-radius:10px">
-Закрыть приложение
-</button>
+<div class="product">
+  <img src="https://via.placeholder.com/150" alt="ForN LeBNEN Pizza">
+  <h2>ForN LeBNEN Pizza</h2>
+  <p>Лучшая пицца прямо к вам домой</p>
+  <button onclick="order('ForN LeBNEN Pizza')">Заказать</button>
+</div>
+
+<script>
+  const tg = Telegram.WebApp;
+  tg.expand();
+
+  let userName = tg.initDataUnsafe?.user?.first_name || "Дорогой клиент";
+
+  function order(productName) {
+    tg.sendData(`Заказ:${productName}`);
+    tg.showAlert(`Ваш заказ "${productName}" отправлен ✅`);
+  }
+</script>
 
 </body>
 </html>
