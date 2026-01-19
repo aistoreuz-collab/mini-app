@@ -2,15 +2,22 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>AI STORE</title>
+  <title>AI STORE - Mini App + Admin Panel</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { font-family: Arial; text-align: center; background: #f5f5f5; margin: 0; padding: 0; }
-    header { background: #0088cc; color: #fff; padding: 15px 0; }
+    body { font-family: Arial; margin: 0; padding: 0; background: #f5f5f5; }
+    header { background: #0088cc; color: #fff; padding: 15px; text-align: center; }
     h1 { margin: 0; font-size: 24px; }
-    .product { background: #fff; margin: 15px; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    img { max-width: 150px; }
-    button { background: #0088cc; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    #main { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px; }
+    .product { background: #fff; margin: 10px; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 200px; text-align: center; }
+    .product img { max-width: 150px; }
+    .product button { background: #0088cc; color: white; border: none; padding: 10px 15px; border-radius: 8px; margin-top: 10px; cursor: pointer; }
+
+    /* Admin Panel */
+    #admin { background: #f0f0f0; padding: 15px; }
+    #admin input, #admin textarea { width: 100%; padding: 8px; margin: 5px 0; }
+    #admin button { background: #0088cc; color: #fff; border: none; padding: 10px 20px; cursor: pointer; margin: 5px 0; border-radius: 8px; }
+    .admin-product { background: #fff; padding: 10px; margin: 10px 0; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -19,30 +26,105 @@
   <h1>👋 Добро пожаловать в AI STORE</h1>
 </header>
 
-<div class="product">
-  <img src="https://via.placeholder.com/150" alt="MCHOES V9 PRO">
-  <h2>MCHOES V9 PRO</h2>
-  <p>Беспроводные наушники Bluetooth</p>
-  <button onclick="order('MCHOES V9 PRO')">Заказать</button>
-</div>
+<div id="main"></div>
 
-<div class="product">
-  <img src="https://via.placeholder.com/150" alt="ForN LeBNEN Pizza">
-  <h2>ForN LeBNEN Pizza</h2>
-  <p>Лучшая пицца прямо к вам домой</p>
-  <button onclick="order('ForN LeBNEN Pizza')">Заказать</button>
+<hr>
+
+<div id="admin">
+  <h2>Admin Panel</h2>
+  <input type="text" id="name" placeholder="Название продукта">
+  <textarea id="description" placeholder="Описание"></textarea>
+  <input type="text" id="price" placeholder="Цена">
+  <input type="text" id="image" placeholder="URL изображения">
+  <button onclick="addProduct()">Добавить продукт</button>
+
+  <h3>Существующие продукты</h3>
+  <div id="productList"></div>
 </div>
 
 <script>
-  const tg = Telegram.WebApp;
-  tg.expand();
+const tg = Telegram.WebApp;
+tg.expand();
 
-  let userName = tg.initDataUnsafe?.user?.first_name || "Дорогой клиент";
+// بيانات المنتجات مدموجة داخل الصفحة
+let products = [
+  {id: 1, name: "MCHOES V9 PRO", description: "Беспроводные наушники Bluetooth", price: "₽4990", image: "https://via.placeholder.com/150"},
+  {id: 2, name: "ForN LeBNEN Pizza", description: "Лучшая пицца прямо к вам домой", price: "₽1200", image: "https://via.placeholder.com/150"}
+];
 
-  function order(productName) {
-    tg.sendData(`Заказ:${productName}`);
-    tg.showAlert(`Ваш заказ "${productName}" отправлен ✅`);
-  }
+// عرض المنتجات في المتجر
+function renderStore() {
+  const container = document.getElementById('main');
+  container.innerHTML = '';
+  products.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'product';
+    div.innerHTML = `
+      <img src="${p.image}" alt="${p.name}">
+      <h2>${p.name}</h2>
+      <p>${p.description}</p>
+      <p><b>${p.price}</b></p>
+      <button onclick="order(${p.id})">Заказать</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// Admin Panel - عرض المنتجات
+function renderAdmin() {
+  const container = document.getElementById('productList');
+  container.innerHTML = '';
+  products.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'admin-product';
+    div.innerHTML = `
+      <b>${p.name}</b> - ${p.price} <br>
+      <button onclick="deleteProduct(${p.id})">Удалить</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// إضافة منتج جديد
+function addProduct() {
+  const name = document.getElementById('name').value;
+  const description = document.getElementById('description').value;
+  const price = document.getElementById('price').value;
+  const image = document.getElementById('image').value;
+
+  if(!name || !description || !price || !image){ alert('Заполните все поля!'); return; }
+
+  const id = products.length ? products[products.length-1].id + 1 : 1;
+  products.push({id, name, description, price, image});
+
+  document.getElementById('name').value = '';
+  document.getElementById('description').value = '';
+  document.getElementById('price').value = '';
+  document.getElementById('image').value = '';
+
+  renderStore();
+  renderAdmin();
+  alert('Продукт добавлен! ⚡');
+}
+
+// حذف منتج
+function deleteProduct(id) {
+  products = products.filter(p => p.id !== id);
+  renderStore();
+  renderAdmin();
+  alert('Продукт удалён!');
+}
+
+// الطلب من الزبون
+function order(productId) {
+  const product = products.find(p => p.id === productId);
+  tg.sendData(`Заказ:${product.name}`);
+  tg.showAlert(`Ваш заказ "${product.name}" отправлен ✅`);
+}
+
+// تفعيل أول عرض
+renderStore();
+renderAdmin();
 </script>
 
 </body>
